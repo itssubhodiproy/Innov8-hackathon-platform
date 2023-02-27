@@ -1,14 +1,18 @@
 const router = require("express").Router();
 const auth = require("../controller/config/auth");
 const {
-  loginUser,
+  loginEmployee,
+  loginNonEmployee,
   registerEmployee,
   registerNonEmployee,
   dashboard,
 } = require("../controller/loginRegister");
 
-// login (public route)
-router.post("/login", loginUser);
+// login for employee (public route)
+router.post("/login-employee", loginEmployee);
+
+// login for non-employee (public route)
+router.post("/login-non-employee", loginNonEmployee);
 
 // register (public route only for employees)
 router.post("/register-employee", registerEmployee);

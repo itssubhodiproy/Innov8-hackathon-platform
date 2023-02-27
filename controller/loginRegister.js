@@ -4,30 +4,24 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 // check if user exists in database, then sends back jwt token
-async function loginUser(req, res) {
+async function loginEmployee(req, res) {
   try {
-    const { email, password, role } = req.body;
-    if (email === "" ||
+    const { email, password } = req.body;
+    if (
+      email === "" ||
       email === undefined ||
       password === "" ||
-      password === undefined ||
-      role === "" ||
-      role === undefined) {
+      password === undefined
+    ) {
       throw new Error("Please fill all the fields");
     }
     // if role is employee, find in employee collection
-    let user;
-    if (role == "employee") {
-      user = await Employee.findOne({ email });
-    }
-    // if role is non-employee, find in non-employee collection
-    else if (role != "non-employee") {
-      user = await NonEmployee.findOne({ email });
-    }
+    let user = await Employee.findOne({ email });
+    // if not found, return not registered
     if (!user) {
       return res
         .status(400)
-        .json({ message: "User not registered with this email" });
+        .json({ message: "Employee not registered with this email" });
     }
     if (!(await bcrypt.compare(password, user.password))) {
       return res.status(400).json({ message: "Incorrect password" });
@@ -41,7 +35,49 @@ async function loginUser(req, res) {
       }
     );
     res.status(200).json({
-      message: "Logged in successfully",
+      message: "Employee Logged in successfully",
+      token,
+    });
+  } catch (err) {
+    res.status(400).json({
+      message: err.message,
+    });
+  }
+}
+
+// check if user exists in database, then sends back jwt token
+async function loginNonEmployee(req, res) {
+  try {
+    const { email, password } = req.body;
+    if (
+      email === "" ||
+      email === undefined ||
+      password === "" ||
+      password === undefined
+    ) {
+      throw new Error("Please fill all the fields");
+    }
+    // if role is nonEmployee, find in nonEmployee collection
+    let user = await NonEmployee.findOne({ email });
+    // if not found, return not registered
+    if (!user) {
+      return res
+        .status(400)
+        .json({ message: "NonEmployee not registered with this email" });
+    }
+    if (!(await bcrypt.compare(password, user.password))) {
+      return res.status(400).json({ message: "Incorrect password" });
+    }
+    // generate jwt token and return
+    const token = await jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.ACCESS_TOKEN_SECRET,
+      {
+        expiresIn: "1h",
+      }
+    );
+    res.status(200).json({
+      message: "NonEmployee Logged in successfully",
       token,
     });
   } catch (err) {
@@ -65,6 +101,7 @@ const registerEmployee = async (req, res) => {
     ) {
       throw new Error("Please fill all the fields");
     }
+    // check if user already exists
     const findUserByEmail = await Employee.findOne({ email });
     if (findUserByEmail) {
       throw new Error("User already exists");
@@ -78,7 +115,7 @@ const registerEmployee = async (req, res) => {
     });
     res.status(201).json({
       employee,
-      message: "Registered successfully",
+      message: "Employee Registered successfully",
     });
   } catch (err) {
     res.status(400).json({
@@ -106,6 +143,7 @@ const registerNonEmployee = async (req, res) => {
     ) {
       throw new Error("Please fill all the fields");
     }
+    // check if user already exists
     const findUserByEmail = await NonEmployee.findOne({ email });
     if (findUserByEmail) {
       throw new Error("User already exists");
@@ -120,7 +158,7 @@ const registerNonEmployee = async (req, res) => {
     });
     res.status(201).json({
       nonEmployee,
-      message: "Registered successfully",
+      message: "NonEmployee Registered successfully",
     });
   } catch (err) {
     res.status(400).json({
@@ -138,7 +176,8 @@ const dashboard = (req, res) => {
 };
 
 module.exports = {
-  loginUser,
+  loginEmployee,
+  loginNonEmployee,
   registerEmployee,
   registerNonEmployee,
   dashboard,
