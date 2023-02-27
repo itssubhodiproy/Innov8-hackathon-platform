@@ -4,22 +4,26 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 // check if user exists in database, then sends back jwt token
-const loginUser = async (req, res) => {
+async function loginUser(req, res) {
   try {
-    const { email, password } = req.body;
-    if (
-      email === "" ||
+    const { email, password, role } = req.body;
+    if (email === "" ||
       email === undefined ||
       password === "" ||
-      password === undefined
-    ) {
+      password === undefined ||
+      role === "" ||
+      role === undefined) {
       throw new Error("Please fill all the fields");
     }
-    // check whether he is employee or not
-    let user = await Employee.findOne({ email });
-    // if not employee, check if he is non-employee
-    if (!user) user = await NonEmployee.findOne({ email });
-    // if not non-employee, non-existed user. throw error
+    // if role is employee, find in employee collection
+    let user;
+    if (role == "employee") {
+      user = await Employee.findOne({ email });
+    }
+    // if role is non-employee, find in non-employee collection
+    else if (role != "non-employee") {
+      user = await NonEmployee.findOne({ email });
+    }
     if (!user) {
       return res
         .status(400)
@@ -45,7 +49,7 @@ const loginUser = async (req, res) => {
       message: err.message,
     });
   }
-};
+}
 
 // register employee in database
 const registerEmployee = async (req, res) => {
@@ -85,8 +89,8 @@ const registerEmployee = async (req, res) => {
 
 // register non-employee in database
 const registerNonEmployee = async (req, res) => {
-  if (req.role != "admin" && req.role != "super-admin"){
-    return res.status(401).json({ message: "Unauthorized User"});
+  if (req.role != "admin" && req.role != "super-admin") {
+    return res.status(401).json({ message: "Unauthorized User" });
   }
   try {
     const { name, email, password, role } = req.body;
@@ -129,7 +133,7 @@ const dashboard = (req, res) => {
   const { id, role } = req;
   res.status(200).json({
     message: `Welcome To ${role} Dashboard`,
-    "user-id": id
+    "user-id": id,
   });
 };
 

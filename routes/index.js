@@ -1,6 +1,11 @@
 const router = require("express").Router();
-const auth = require("../database/config/auth");
-const {loginUser, registerEmployee, registerNonEmployee, dashboard} = require("../controller/loginRegister");
+const auth = require("../controller/config/auth");
+const {
+  loginUser,
+  registerEmployee,
+  registerNonEmployee,
+  dashboard,
+} = require("../controller/loginRegister");
 
 // login (public route)
 router.post("/login", loginUser);
@@ -12,6 +17,8 @@ router.post("/register-employee", registerEmployee);
 // admin has to be logged in to register non-employees role such as Panelist, Moderator, etc.
 router.post("/register-non-employee", auth, registerNonEmployee);
 
-router.get("/dashboard", auth, dashboard)
+// dashboard (private route for logged in user)
+// every user will be redirected to their respective dashboard
+router.get("/dashboard", auth, dashboard);
 
 module.exports = router;
