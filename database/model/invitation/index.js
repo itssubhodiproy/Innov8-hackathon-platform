@@ -10,11 +10,13 @@ const InvitationSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: ["User"],
     required: true,
+    index: true,
   },
   to: {
     type: mongoose.Schema.Types.ObjectId,
     ref: ["User"],
     required: true,
+    index: true,
   },
   role: {
     type: String,

@@ -1,4 +1,5 @@
 const Project = require("../../database/model/project");
+const Role = require("../../database/model/role");
 
 // project CRUD operations
 
@@ -13,19 +14,35 @@ const CreateProject = async (req, res) => {
   ) {
     throw new Error("Please fill all the fields");
   }
-  // project name should be unique
-  const existedProject = await Project.findOne({ name });
-  if (existedProject) {
-    return res.status(400).json({
-      message: `Project with name = "${name}" already exists`,
+  try {
+    // project name should be unique
+    const existedProject = await Project.findOne({ name });
+    if (existedProject) {
+      return res.status(400).json({
+        message: `Project with name = "${name}" already exists`,
+      });
+    }
+    // create new project
+    const newProject = await Project.create({
+      name,
+      description,
+      link,
+    });
+    // create default role as captain
+    const captainRole = await Role.create({
+      userId: req.userId,
+      projectId: newProject._id,
+    });
+    // send response
+    return res.status(201).json({
+      message: "Project created successfully",
+      project: newProject,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal server error",
     });
   }
-  // create new project
-  const newProject = Project.create({
-    name,
-    description,
-    link,
-  });
 };
 
 const UpdateProject = async (req, res) => {};
