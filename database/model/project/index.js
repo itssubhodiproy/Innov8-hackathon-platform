@@ -11,10 +11,6 @@ const projectSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  link: {
-    type: String,
-    // required: true,
-  },
   status: {
     type: String,
     enum: ["submitted", "stage1", "stage2", "qualified", "rejected"],
