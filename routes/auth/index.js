@@ -9,6 +9,6 @@ router.post("/login", loginUser);
 router.post("/register", registerUser);
 
 // logout (private route)
-router.post("/logout", JWT_AUTH, logOut);
+router.get("/logout", JWT_AUTH, logOut);
 
 module.exports = router;

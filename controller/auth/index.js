@@ -32,9 +32,9 @@ const registerUser = async (req, res) => {
       registeredUser,
       message: "User registered successfully",
     });
-  } catch (err) {
+  } catch (error) {
     res.status(400).json({
-      message: err.message,
+      message: error.message,
     });
   }
 };
@@ -73,9 +73,9 @@ const loginUser = async (req, res) => {
       message: "User Logged in successfully",
       token,
     });
-  } catch (err) {
+  } catch (error) {
     res.status(400).json({
-      message: err.message,
+      message: error.message,
     });
   }
 };
@@ -84,12 +84,13 @@ const logOut = async (req, res) => {
   // remove token from auth header
   try {
     const token = req.header("Authorization").replace("Bearer ", "");
-    req.status(200).json({
+    res.status(200).json({
       message: "User Logged out successfully",
+      token
     });
   } catch (error) {
     res.status(400).json({
-      message: err.message,
+      message: error.message,
     });
   }
 };

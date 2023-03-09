@@ -25,7 +25,7 @@ const roleSchema = new mongoose.Schema({
       "captain",
     ],
     default: "captain",
-    required: true,
+    required:true
   },
 });
 

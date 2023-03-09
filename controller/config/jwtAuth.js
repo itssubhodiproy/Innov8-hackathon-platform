@@ -6,7 +6,7 @@ const JWT_AUTH = (req, res, next) => {
     if (token) {
       token = token.split(" ")[1];
       let user = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-      req.id = user.id;
+      req.userId = user.userId;
     } else {
       return res.sendStatus(401).json({ message: "Token not found" });
     }

@@ -114,6 +114,7 @@ const DeleteProject = async (req, res) => {
   try {
     // delete project
     const deleteProject = await Project.findByIdAndDelete(req.query.projectId);
+    const deleteRoles = await Role.deleteMany({ projectId: req.query.projectId });
     return res.status(200).json({
       message: "Project deleted successfully",
       project: deleteProject,
