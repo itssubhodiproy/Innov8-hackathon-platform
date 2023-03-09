@@ -13,6 +13,7 @@ app.use(express.json());
 
 // routes
 app.use("/api/auth", require("./routes/auth"));
+app.use("/api/project", require("./routes/project"));
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);

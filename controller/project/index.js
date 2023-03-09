@@ -40,6 +40,7 @@ const CreateProject = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       message: "Internal server error",
+      error,
     });
   }
 };
@@ -94,6 +95,7 @@ const UpdateProject = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       message: "Internal server error",
+      error,
     });
   }
 };
@@ -119,14 +121,52 @@ const DeleteProject = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       message: "Internal server error",
+      error,
     });
   }
 };
 
+const GetAllProjects = async (req, res) => {
+  // get all projects of current logged in user
+  try {
+    const projects = await Role.find({ userId: req.userId }).populate(
+      "projectId"
+    );
+    res.status(200).json({
+      message: "This is all projects current user is involved in",
+      projects,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal server error",
+      error,
+    });
+  }
+};
 
+const GetProjectById = async (req, res) => {
+  const projectId = req.query.projectId;
+  try {
+    const project = await Project.findById(projectId);
+    const members = await Role.find({ projectId: projectId }).populate(
+      "userId"
+    );
+    res.status(200).json({
+      projectDetails: project,
+      allMembers: members,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal server error",
+      error,
+    });
+  }
+};
 
 module.exports = {
   CreateProject,
   UpdateProject,
   DeleteProject,
+  GetAllProjects,
+  GetProjectById,
 };
