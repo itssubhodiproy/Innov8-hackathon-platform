@@ -8,19 +8,28 @@ const InvitationSchema = new mongoose.Schema({
   },
   from: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: ["User"],
+    ref: "User",
     required: true,
     index: true,
   },
   to: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: ["User"],
+    ref: "User",
     required: true,
     index: true,
   },
   role: {
     type: String,
     required: true,
+    enum: [
+      "admin",
+      "member",
+      "panellist",
+      "reviewer",
+      "mentor",
+      "judge",
+      "captain",
+    ],
   },
 });
 
