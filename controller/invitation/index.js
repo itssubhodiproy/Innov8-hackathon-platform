@@ -9,7 +9,7 @@ const createInvitation = async (req, res) => {
   if (!email || !role || !projectId) {
     return res.status(400).json({ message: "Please fill all the fields" });
   }
-  // if current loggedin user is not admin or captain, return 403
+  // only captains and admins are allowed to send requests, return 403
   const fromUser = await Role.findOne({ userId: req.userId, projectId });
   if (!fromUser || (req.role !== "admin" && fromUser.role !== "captain")) {
     return res
@@ -25,6 +25,17 @@ const createInvitation = async (req, res) => {
   const toUser = await User.findOne({ email });
   if (!toUser) {
     return res.status(400).json({ message: "User does not register yet" });
+  }
+  // if he has already an invitation for the same project, return 403
+  const isInvited = await Invitation.findOne({
+    projectId,
+    to: toUser._id,
+    role,
+  });
+  if (isInvited) {
+    return res
+      .status(403)
+      .json({ message: "User has already been invited for the project" });
   }
   // if toUser is already a member of the project, return 403
   const toUserRole = await Role.findOne({ userId: toUser._id, projectId });

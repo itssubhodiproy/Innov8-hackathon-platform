@@ -6,6 +6,7 @@ const {
   GetAllProjects,
   GetProjectById,
   changeProjectStatus,
+  createGlobalVote,
 } = require("../../controller/project");
 const { JWT_AUTH } = require("../../controller/config/jwtAuth");
 
@@ -26,5 +27,8 @@ router.get("/get-project", JWT_AUTH, GetProjectById);
 
 // change the status of the project for only admin (private route)
 router.put("/change-status", JWT_AUTH, changeProjectStatus);
+
+// vote the project at every stage for only judges (private route)
+router.post("/vote-project", JWT_AUTH, createGlobalVote);
 
 module.exports = router;

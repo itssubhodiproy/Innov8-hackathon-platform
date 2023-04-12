@@ -1,6 +1,7 @@
 const Project = require("../../database/model/project");
 const Role = require("../../database/model/role");
 const User = require("../../database/model/user");
+const VoteGlobal = require("../../database/model/vote_global");
 
 // project CRUD operations
 
@@ -52,14 +53,14 @@ const UpdateProject = async (req, res) => {
     throw new Error("Please fill all the fields");
   }
   // getting user role
-  const user = await Role.findOne({
+  const projectRole = await Role.findOne({
     userId: req.userId,
     projectId: req.query.projectId,
   });
   // only project captain can update project details
-  if (user.role !== "captain") {
+  if (projectRole.role !== "captain" && projectRole.role !== "member") {
     return res.status(401).json({
-      message: "Only Captain can update project",
+      message: "Only Captain and member can update project",
     });
   }
   try {
@@ -86,12 +87,12 @@ const UpdateProject = async (req, res) => {
 
 const DeleteProject = async (req, res) => {
   // only project captain and admin can delete project
-  const user = await Role.findOne({
+  const projectRole = await Role.findOne({
     userId: req.userId,
     projectId: req.query.projectId,
   });
   // only project captain can update project details
-  if (user.role !== "captain" && req.role !== "admin") {
+  if (projectRole.role !== "captain" && req.role !== "admin") {
     return res.status(401).json({
       message: "Only Admin and Captain can delete project",
     });
@@ -99,9 +100,13 @@ const DeleteProject = async (req, res) => {
   try {
     // delete project
     const deleteProject = await Project.findByIdAndDelete(req.query.projectId);
+    // delete all roles of project
     const deleteRoles = await Role.deleteMany({
       projectId: req.query.projectId,
     });
+    // delete all votes of project
+    // delete all hypotheses of project
+    // Delete Hypothesis function
     return res.status(200).json({
       message: "Project deleted successfully",
       project: deleteProject,
@@ -162,19 +167,70 @@ const changeProjectStatus = async (req, res) => {
         message: "Only admin can change project status",
       });
     }
+    //if status of the project is somthing other than enums, return error
+    if (
+      req.body.status !== "stage1" &&
+      req.body.status !== "stage2" &&
+      req.body.status !== "stage3" &&
+      req.body.status !== "qualified" &&
+      req.body.status !== "rejected"
+    ) {
+      return res.status(400).json({
+        message: "Invalid project status",
+      });
+    }
     // change the status of the project
-    await Project.findByIdAndUpdate(req.query.projectId, {
+    const project = await Project.findByIdAndUpdate(req.query.projectId, {
       status: req.body.status,
     });
     // send response of success
     res.status(200).json({
       message: "Project status changed successfully",
+      project,
     });
   } catch (error) {
     return res.status(500).json({
       message: "Internal server error",
       error,
     });
+  }
+};
+// it is only for judges who votes at every stage of project evaluation
+const createGlobalVote = async (req, res) => {
+  const { projectId, userId, vote } = req.body;
+  try {
+    // check if the user is the member of the project
+    const projectRole = await Role.findOne({ projectId, userId });
+    // if user is either member or captain return error
+    if (
+      !projectRole ||
+      projectRole.role === "member" ||
+      projectRole.role === "captain"
+    ) {
+      return res.status(400).json({
+        message: "You are not allowed to vote at this stage",
+      });
+    }
+    // check if the user has already voted at any stage of the project
+    const isVoted = await VoteGlobal.findOne({
+      projectId,
+      userId,
+    });
+    // takeout the stage from the project
+    const project = await Project.findById(projectId);
+    // create vote
+    const vote = await VoteGlobal.create({
+      projectId,
+      userId,
+      role: projectRole.role,
+      vote,
+      stage: project.stage,
+    });
+    // return vote
+    return res.status(200).json({ message: "Vote created successfully", vote });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -185,4 +241,5 @@ module.exports = {
   GetAllProjects,
   GetProjectById,
   changeProjectStatus,
+  createGlobalVote,
 };
