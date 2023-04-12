@@ -2,18 +2,10 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
-const hypothesisSchema = new Schema({
+const voteGlobalSchema = new Schema({
   projectId: {
     type: Schema.Types.ObjectId,
     ref: "Project",
-    required: true,
-  },
-  title: {
-    type: String,
-    required: true,
-  },
-  description: {
-    type: String,
     required: true,
   },
   userId: {
@@ -25,14 +17,12 @@ const hypothesisSchema = new Schema({
     type: String,
     required: true,
   },
+  vote: {
+    type: Number,
+    required: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
   },
-  overAllScore: {
-    type: Number,
-    default: 0,
-  },
 });
-
-module.exports = mongoose.model("Hypothesis", hypothesisSchema);
