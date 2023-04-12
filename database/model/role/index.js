@@ -15,17 +15,9 @@ const roleSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: [
-      "admin",
-      "member",
-      "panellist",
-      "reviewer",
-      "mentor",
-      "judge",
-      "captain",
-    ],
+    enum: ["member", "panellist", "reviewer", "mentor", "judge", "captain"],
     default: "captain",
-    required:true
+    required: true,
   },
 });
 

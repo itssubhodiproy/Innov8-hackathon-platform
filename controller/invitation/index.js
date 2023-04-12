@@ -4,14 +4,14 @@ const Project = require("../../database/model/project");
 const Invitation = require("../../database/model/invitation");
 
 const createInvitation = async (req, res) => {
-  const { email, role, projectId } = req.body;
+  const { email, projectId, role } = req.body;
   // if empty fields, return 400
   if (!email || !role || !projectId) {
     return res.status(400).json({ message: "Please fill all the fields" });
   }
   // if current loggedin user is not admin or captain, return 403
   const fromUser = await Role.findOne({ userId: req.userId, projectId });
-  if (!fromUser || (fromUser.role !== "admin" && fromUser.role !== "captain")) {
+  if (!fromUser || (req.role !== "admin" && fromUser.role !== "captain")) {
     return res
       .status(403)
       .json({ message: "User is not authrised to create an invititation" });
@@ -70,14 +70,25 @@ const performOperationOverInvitation = async (req, res) => {
     if (!invitation) {
       return res.status(404).json({ message: "Invitation does not exist" });
     }
+    // check if project exists or not
+    const project = await Project.findById(invitation.projectId);
+
+    if (!project) {
+      return res.status(404).json({ message: "Project does not exist" });
+    }
     // 3. if invitation exists, check if the current loggedin user is the toUser
     // 4. if not, return 403
-    if (invitation.to.toString() !== req.userId) {
+    if (invitation.to !== req.userId) {
       return res.status(403).json({ message: "User is not authorised" });
     }
     // 5. if yes, create a role for the user based on the response type
     // 5.1 if response type is accept, create a role
     // 5.2 if response type is reject, do nothing
+    if (responseType !== "reject" || responseType !== "accept") {
+      return res.status(400).json({
+        message: "responseType only varies between accept and reject",
+      });
+    }
     if (responseType === "accept") {
       await Role.create({
         userId: req.userId,
@@ -88,6 +99,11 @@ const performOperationOverInvitation = async (req, res) => {
     // 6. delete the invitation
     await Invitation.findByIdAndDelete(invitationId);
     // 7. return 200
+    if (responseType === "reject") {
+      return res
+        .status(200)
+        .json({ message: "Invitation rejected successfully" });
+    }
     res.status(200).json({ message: "Invitation accepted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });

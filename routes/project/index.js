@@ -5,6 +5,7 @@ const {
   DeleteProject,
   GetAllProjects,
   GetProjectById,
+  changeProjectStatus,
 } = require("../../controller/project");
 const { JWT_AUTH } = require("../../controller/config/jwtAuth");
 
@@ -22,5 +23,8 @@ router.get("/get-all-projects", JWT_AUTH, GetAllProjects);
 
 // get a single project by ID (private route)
 router.get("/get-project", JWT_AUTH, GetProjectById);
+
+// change the status of the project for only admin (private route)
+router.put("/change-status", JWT_AUTH, changeProjectStatus);
 
 module.exports = router;

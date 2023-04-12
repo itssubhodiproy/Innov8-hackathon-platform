@@ -63,7 +63,7 @@ const loginUser = async (req, res) => {
     }
     // generate jwt token and return
     const token = await jwt.sign(
-      { userId: user._id },
+      { userId: user._id, role: user.role },
       process.env.ACCESS_TOKEN_SECRET,
       {
         expiresIn: "1h",
@@ -86,7 +86,7 @@ const logOut = async (req, res) => {
     const token = req.header("Authorization").replace("Bearer ", "");
     res.status(200).json({
       message: "User Logged out successfully",
-      token
+      token,
     });
   } catch (error) {
     res.status(400).json({
