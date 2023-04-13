@@ -1,7 +1,9 @@
+const Hypothesis = require("../../database/model/hypothesis");
 const Project = require("../../database/model/project");
 const Role = require("../../database/model/role");
 const User = require("../../database/model/user");
-const VoteGlobal = require("../../database/model/vote_global");
+const VoteGlobal = require("../../database/model/project/vote_global");
+const MeetingHypothesis = require("../../database/model/biv_phase/meeting_hypothesis");
 
 // project CRUD operations
 
@@ -86,10 +88,11 @@ const UpdateProject = async (req, res) => {
 };
 
 const DeleteProject = async (req, res) => {
+  const projectId = req.query.projectId;
   // only project captain and admin can delete project
   const projectRole = await Role.findOne({
     userId: req.userId,
-    projectId: req.query.projectId,
+    projectId,
   });
   // only project captain can update project details
   if (projectRole.role !== "captain" && req.role !== "admin") {
@@ -99,13 +102,17 @@ const DeleteProject = async (req, res) => {
   }
   try {
     // delete project
-    const deleteProject = await Project.findByIdAndDelete(req.query.projectId);
+    const deleteProject = await Project.findByIdAndDelete(projectId);
     // delete all roles of project
-    const deleteRoles = await Role.deleteMany({
-      projectId: req.query.projectId,
+    await Role.deleteMany({
+      projectId,
     });
-    // delete all votes of project
     // delete all hypotheses of project
+    await Hypothesis.deleteMany({ projectId });
+    // delete all votes of the project
+    await VoteGlobal.deleteMany({ projectId });
+    // delete all meetings of the project
+    await MeetingHypothesis.deleteMany({ projectId });
     // Delete Hypothesis function
     return res.status(200).json({
       message: "Project deleted successfully",

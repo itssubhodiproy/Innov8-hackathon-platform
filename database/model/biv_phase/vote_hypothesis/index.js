@@ -8,6 +8,11 @@ const voteHypothesisSchema = new Schema({
     ref: "Hypothesis",
     required: true,
   },
+  meetingId: {
+    type: Schema.Types.ObjectId,
+    ref: "Meeting",
+    required: true,
+  },
   userId: {
     type: Schema.Types.ObjectId,
     ref: "User",
@@ -26,3 +31,5 @@ const voteHypothesisSchema = new Schema({
     default: Date.now,
   },
 });
+
+module.exports = mongoose.model("VoteHypothesis", voteHypothesisSchema);

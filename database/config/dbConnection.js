@@ -12,4 +12,6 @@ const dbConnect = async () => {
   }
 };
 
-module.exports = dbConnect;
+const conn = mongoose.connection;
+
+module.exports = { dbConnect, conn };

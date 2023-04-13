@@ -1,6 +1,10 @@
 const Role = require("../../database/model/role");
 const Hypothesis = require("../../database/model/hypothesis");
 const Project = require("../../database/model/project");
+const MeetingForHypothesis = require("../../database/model/biv_phase/meeting_hypothesis/hypothesis");
+const MeetingForMembers = require("../../database/model/biv_phase/meeting_hypothesis/member");
+const VoteHypothesis = require("../../database/model/biv_phase/vote_hypothesis");
+const Hypothesis = require("../../database/model/biv_phase/meeting_hypothesis/hypothesis");
 
 const CreateHypothesis = async (req, res) => {
   const { title, description, projectId } = req.body;
@@ -26,7 +30,7 @@ const CreateHypothesis = async (req, res) => {
       title,
       description,
       projectId,
-      userId
+      userId,
     });
     // return hypothesis
     return res
@@ -64,6 +68,7 @@ const DeleteHypothesis = async (req, res) => {
         message: "You are not allowed to delete hypothesis",
       });
     }
+    await MeetingForHypothesis.deleteMany({ hypothesisId });
     // delete hypothesis
     await hypothesis.remove();
     // remove all the votes of the hypothesis
@@ -98,8 +103,48 @@ const GetAllHypothesis = async (req, res) => {
   }
 };
 
+const VoteEachHypothesis = async (req, res) => {
+  try {
+    // after each meeting, the every member who attended, will vote for each hypothesis
+    const { hypothesisId, meetingId, vote } = req.body;
+    const userId = req.userId;
+    // extract project id from hypothesisId
+    const hypothesis = await Hypothesis.findById(hypothesisId);
+    const project = await Project.findById(hypothesis.projectId);
+    // check whether the user already voted for the hypothesis
+    const user = await MeetingForMembers.findOne({
+      hypothesisId,
+      meetingId,
+    });
+    // check if user has already voted or not
+    if (user.isVoted) {
+      return res.status(400).json({ message: "You already voted for this" });
+    }
+    // update the user's vote status
+    const updateVoteStatus = await MeetingForMembers.findByIdAndUpdate(
+      user._id,
+      { isVoted: true }
+    );
+    // extract user's role
+    const userRole = await Role.find({ userId, projectId: project.projectId });
+    // if not, then allow the user to vote
+    const voteByUser = await VoteHypothesis.create({
+      hypothesisId,
+      userId,
+      meetingId,
+      role: userRole.role,
+      vote,
+    });
+    return res.status(200).json({ message: "Voted successfully" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 module.exports = {
   CreateHypothesis,
   DeleteHypothesis,
   GetAllHypothesis,
+  VoteEachHypothesis,
 };

@@ -2,6 +2,7 @@ const Role = require("../../database/model/role");
 const User = require("../../database/model/user");
 const Project = require("../../database/model/project");
 const Invitation = require("../../database/model/invitation");
+const MeetingForMember = require("../../database/model/biv_phase/meeting_hypothesis/member");
 
 const createInvitation = async (req, res) => {
   const { email, projectId, role } = req.body;
@@ -121,8 +122,52 @@ const performOperationOverInvitation = async (req, res) => {
   }
 };
 
+const removeMemberFromProject = async (req, res) => {
+  try {
+    const { projectId, removeUserId } = req.body;
+    const userId = req.userId;
+    // check if the user is captain or admin
+    const userRole = await Role.findOne({ projectId, userId });
+    if (!userRole || (req.role !== "admin" && userRole.role !== "captain")) {
+      return res
+        .status(403)
+        .json({ message: "User is not authorised to remove someone" });
+    }
+    // check if user is a member of the project or not
+    const WillDeleteUser = await Role.findOne({ projectId, removeUserId });
+    if (!WillDeleteUser) {
+      return res
+        .status(400)
+        .json({ message: "User is not a member of the project" });
+    }
+    // captain can only remove members
+    if (WillDeleteUser.role === "member" && userRole.role === "captain") {
+      await Role.findByIdAndDelete(WillDeleteUser._id);
+      await MeetingForMember.deleteMany({
+        roleId: WillDeleteUser._id,
+      });
+      return res.status(200).json({ message: "User removed successfully" });
+    }
+    // if captain is trying to remove captain or judge, return 403
+    if (userRole.role === "captain") {
+      return res.status(403).json({ message: "You can't remove judges" });
+    }
+    // admin can remove anyone
+    await Role.findByIdAndDelete(WillDeleteUser._id);
+    await MeetingForMember.deleteMany({
+      roleId: WillDeleteUser._id,
+    });
+    return res
+      .status(200)
+      .json({ message: "remove user from project successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 module.exports = {
   createInvitation,
   getInvitations,
   performOperationOverInvitation,
+  removeMemberFromProject,
 };
