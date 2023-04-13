@@ -211,13 +211,19 @@ const createGlobalVote = async (req, res) => {
         message: "You are not allowed to vote at this stage",
       });
     }
-    // check if the user has already voted at any stage of the project
+    // takeout the stage from the project
+    const project = await Project.findById(projectId);
+    // check if the user has already voted at current stage of the project
     const isVoted = await VoteGlobal.findOne({
       projectId,
       userId,
+      stage: project.stage,
     });
-    // takeout the stage from the project
-    const project = await Project.findById(projectId);
+    if (isVoted) {
+      return res.status(400).json({
+        message: "You have already voted at this stage",
+      });
+    }
     // create vote
     const vote = await VoteGlobal.create({
       projectId,

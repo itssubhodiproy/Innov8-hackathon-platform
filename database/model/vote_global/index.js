@@ -21,8 +21,14 @@ const voteGlobalSchema = new Schema({
     type: Number,
     required: true,
   },
+  stage: {
+    type: String,
+    required: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
   },
 });
+
+module.exports = mongoose.model("VoteGlobal", voteGlobalSchema);

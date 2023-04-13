@@ -21,10 +21,6 @@ const hypothesisSchema = new Schema({
     ref: "User",
     required: true,
   },
-  role: {
-    type: String,
-    required: true,
-  },
   createdAt: {
     type: Date,
     default: Date.now,
