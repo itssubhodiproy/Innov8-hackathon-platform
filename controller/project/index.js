@@ -212,10 +212,11 @@ const createGlobalVote = async (req, res) => {
     if (
       !projectRole ||
       projectRole.role === "member" ||
-      projectRole.role === "captain"
+      projectRole.role === "captain" ||
+      req.role === "admin"
     ) {
       return res.status(400).json({
-        message: "You are not allowed to vote at this stage",
+        message: "Only judges can vote",
       });
     }
     // takeout the stage from the project
