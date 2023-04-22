@@ -42,6 +42,7 @@ const CreateHypothesis = async (req, res) => {
   }
 };
 
+// remove delete hypothesis
 const DeleteHypothesis = async (req, res) => {
   const { hypothesisId } = req.query;
   const userId = req.userId;
