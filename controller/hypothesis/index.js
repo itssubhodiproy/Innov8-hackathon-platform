@@ -1,5 +1,5 @@
 const Role = require("../../database/model/role");
-const Hypothesis = require("../../database/model/hypothesis");
+const Hypothesis = require("../../database/model/biv_phase/hypothesis");
 const Project = require("../../database/model/project");
 const MeetingForHypothesis = require("../../database/model/biv_phase/meeting_hypothesis/hypothesis");
 const MeetingForMembers = require("../../database/model/biv_phase/meeting_hypothesis/member");

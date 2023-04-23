@@ -1,8 +1,8 @@
-const Hypothesis = require("../../database/model/hypothesis");
+const Hypothesis = require("../../database/model/biv_phase/hypothesis");
 const Project = require("../../database/model/project");
 const Role = require("../../database/model/role");
 const User = require("../../database/model/user");
-const VoteGlobal = require("../../database/model/project/vote_global");
+const VoteGlobal = require("../../database/model/vote_global");
 const MeetingHypothesis = require("../../database/model/biv_phase/meeting_hypothesis");
 
 // project CRUD operations
