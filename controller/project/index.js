@@ -132,7 +132,8 @@ const GetAllProjects = async (req, res) => {
     const projects = await Role.find({ userId: req.userId }).populate(
       "projectId"
     );
-    res.status(200).json({
+    console.log(projects);
+    return res.status(200).json({
       message: "This is all projects current user is involved in",
       projects,
     });
